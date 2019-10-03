@@ -1,22 +1,30 @@
-const Booking = require('../models/Booking');
-const Spot = require('../models/Spot');
+const Booking = require("../models/Booking");
+const Spot = require("../models/Spot");
 
 const store = async (req, res) => {
   const { user_id } = req.headers;
   const { spot_id } = req.params;
+  const { date } = req.body;
 
-  console.log(id);
-  console.log(user_id);
-  try{
-    const spot = await Spot.findById(id);
-    if(!spot){
-      return res.status(400).json({ error: "Spot not found!"});
+  try {
+    const spot = await Spot.findById(spot_id);
+    if (!spot) {
+      return res.status(400).json({ error: "Spot not found!" });
     }
 
-    const booking = await Booking.create({ user: user_id, spot: id, date: new Date().toString() });
+    const booking = await Booking.create({
+      user: user_id,
+      spot: spot_id,
+      date
+    });
+
+    await booking
+      .populate("spot")
+      .populate("user")
+      .execPopulate();
 
     return res.json(booking);
-  }catch(err){
+  } catch (err) {
     const { message } = err;
     return res.status(500).json({ error: message });
   }
@@ -24,4 +32,4 @@ const store = async (req, res) => {
 
 module.exports = {
   store
-}
+};
